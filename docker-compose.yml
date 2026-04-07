@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3020:8000"
+      - "3020:9000"
     volumes:
       - .:/var/www
     env_file:
