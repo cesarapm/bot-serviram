@@ -1,14 +1,13 @@
 services:
 
-  # ── Laravel PHP-FPM — puerto 3010 (tu Nginx externo apunta aquí) ───────────
   app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3020:9000"
+      - "3020:8000"
     volumes:
-      - ./public:/var/www/public
+      - .:/var/www
     env_file:
       - .env
     depends_on:
@@ -16,9 +15,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    command: php artisan serve --host=0.0.0.0 --port=8000
     restart: unless-stopped
 
-  # ── Laravel Reverb WebSocket — puerto 8072 ─────────────────────────────────
   reverb:
     build:
       context: .
@@ -33,7 +32,6 @@ services:
       - redis
     restart: unless-stopped
 
-  # ── MySQL 8 ────────────────────────────────────────────────────────────────
   mysql:
     image: mysql:8.0
     environment:
@@ -48,7 +46,6 @@ services:
       retries: 10
     restart: unless-stopped
 
-  # ── Redis ──────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     volumes:
