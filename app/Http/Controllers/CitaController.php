@@ -69,7 +69,7 @@ class CitaController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info(request()->all()); // Log para depuración
+        // Log::info(request()->all()); // Log para depuración
         $data = $request->validate([
             'estatus'         => ['sometimes', Rule::in(['pendiente', 'confirmada', 'cancelada', 'completada'])],
             'nombre'          => ['required', 'string', 'max:255'],
@@ -93,13 +93,15 @@ class CitaController extends Controller
      */
     public function update(Request $request, Cita $cita)
     {
+
+    // Log::info(request()->all());
         $data = $request->validate([
             'estatus'         => ['sometimes', Rule::in(['pendiente', 'confirmada', 'cancelada', 'completada'])],
             'nombre'          => ['sometimes', 'string', 'max:255'],
             'servicio'        => ['sometimes', 'string', 'max:255'],
             'precio_servicio' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'fecha'           => ['sometimes', 'date_format:Y-m-d'],
-            'hora'            => ['sometimes', 'date_format:H:i'],
+            'hora'            => ['sometimes', 'date_format:H:i:s'],
             'numero_celular'  => ['sometimes', 'string', 'max:20'],
             'estado'          => ['sometimes', 'string', 'max:100'],
             'ciudad'          => ['sometimes', 'string', 'max:100'],
