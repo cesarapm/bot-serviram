@@ -16,7 +16,7 @@ class ConversationController extends Controller
     /**
      * Lista conversaciones activas.
      * - Admin: ve todas.
-     * - Asesor: solo las asignadas a él.
+     * - Asesor: solo las de su departamento.
      */
     public function index(Request $request)
     {
@@ -25,8 +25,22 @@ class ConversationController extends Controller
         $query = Conversation::with(['contact', 'lastMessage', 'assignedAgent'])
             ->where('status', 'active');
 
-        if ($user->hasRole('asesor')) {
-            $query->where('assigned_to', $user->id);
+        if ($user->hasRole('asesor') && $user->department) {
+            // Los asesores ven conversaciones de su departamento de varias formas:
+            $query->where(function ($subQuery) use ($user) {
+                $subQuery
+                    // 1. Conversaciones asignadas directamente al departamento
+                    ->where('department', $user->department)
+                    // 2. O conversaciones asignadas a usuarios del mismo departamento  
+                    ->orWhereHas('assignedAgent', function ($agentQuery) use ($user) {
+                        $agentQuery->where('department', $user->department);
+                    })
+                    // 3. O conversaciones sin asignar (pueden tomarlas)
+                    ->orWhere(function ($unassignedQuery) {
+                        $unassignedQuery->whereNull('department')
+                                      ->whereNull('assigned_to');
+                    });
+            });
         }
 
         $conversations = $query->orderByDesc('updated_at')
@@ -35,6 +49,8 @@ class ConversationController extends Controller
                 'id'           => $c->id,
                 'is_human'     => $c->is_human,
                 'status'       => $c->status,
+                'department'   => $c->department,
+                'department_name' => $c->assigned_department_name,
                 'contact'      => [
                     'id'    => $c->contact->id,
                     'phone' => $c->contact->phone,
@@ -88,16 +104,16 @@ class ConversationController extends Controller
     )
     {
 
-        Log::info('sendHuman [1/6] inicio', [
-            'conversation_id' => $conversation->id,
-            'is_human'        => $conversation->is_human,
-            'request'         => $request->all(),
-        ]);
+        // Log::info('sendHuman [1/6] inicio', [
+        //     'conversation_id' => $conversation->id,
+        //     'is_human'        => $conversation->is_human,
+        //     'request'         => $request->all(),
+        // ]);
 
         $quotaSnapshot = $messageQuota->snapshot();
         $messageQuota->notifyIfChanged($quotaSnapshot);
 
-        Log::info('sendHuman [2/6] quota ok', ['blocked' => $quotaSnapshot['blocked']]);
+        // Log::info('sendHuman [2/6] quota ok', ['blocked' => $quotaSnapshot['blocked']]);
 
         if ($messageQuota->isBlocked($quotaSnapshot)) {
             return response()->json($messageQuota->blockedPayload($quotaSnapshot), 429);
@@ -111,10 +127,10 @@ class ConversationController extends Controller
             'body' => 'required|string|max:1600',
         ]);
 
-        Log::info('sendHuman [3/6] validado, enviando a Twilio', [
-            'to'   => $conversation->contact->phone,
-            'body' => $validated['body'],
-        ]);
+        // Log::info('sendHuman [3/6] validado, enviando a Twilio', [
+        //     'to'   => $conversation->contact->phone,
+        //     'body' => $validated['body'],
+        // ]);
 
         // Enviar el mensaje real por WhatsApp vía Twilio
         try {
@@ -127,7 +143,7 @@ class ConversationController extends Controller
             return response()->json(['error' => 'Error al enviar el mensaje.'], 500);
         }
 
-        Log::info('sendHuman [4/6] Twilio respondió', ['twilio_sid' => $twilioSid]);
+        // Log::info('sendHuman [4/6] Twilio respondió', ['twilio_sid' => $twilioSid]);
 
         if (!$twilioSid) {
             return response()->json(['error' => 'Twilio no pudo enviar el mensaje.'], 502);
@@ -141,14 +157,14 @@ class ConversationController extends Controller
             'twilio_sid'      => $twilioSid,
         ]);
 
-        Log::info('sendHuman [5/6] mensaje guardado', ['message_id' => $message->id]);
+        // Log::info('sendHuman [5/6] mensaje guardado', ['message_id' => $message->id]);
 
         broadcast(new MessageReceived($message));
 
         $quotaSnapshot = $messageQuota->snapshot();
         $messageQuota->notifyIfChanged($quotaSnapshot);
 
-        Log::info('sendHuman [6/6] completado');
+        // Log::info('sendHuman [6/6] completado');
 
         return response()->json([
             'status'     => 'sent',

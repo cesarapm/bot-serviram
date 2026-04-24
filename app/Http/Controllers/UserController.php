@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\AgentLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Log;
 
 class UserController extends Controller
 {
@@ -83,10 +84,12 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // Log::info($request->all());
         $validated = $request->validate([
             'name'     => 'sometimes|string|max:255',
             'email'    => 'sometimes|email|unique:users,email,' . $user->id,
             'password' => 'sometimes|string|min:8',
+            'department' => 'sometimes|string|max:255',
         ]);
 
         if (isset($validated['password'])) {

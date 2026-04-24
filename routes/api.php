@@ -8,6 +8,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageQuotaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Api\DepartmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // ─── Webhooks (sin auth, llamados desde n8n) ─────────────────────────────────
 Route::post('/webhook', [WebhookController::class, 'receive']);
 Route::post('/webhook/outbound', [WebhookController::class, 'storeOutbound']);
+Route::post('/webhook/assign-department', [WebhookController::class, 'assignToDepartment']);
 
 // ─── Citas desde n8n (sin auth) ──────────────────────────────────────────────
 Route::post('/webhook/citas', [CitaController::class, 'store']);
@@ -74,4 +76,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // ─── Gestión de citas (admin puede editar/borrar) ─────────────────────────
     Route::put('/citas/{cita}', [CitaController::class, 'update']);
     Route::delete('/citas/{cita}', [CitaController::class, 'destroy']);
+    
+    // ─── Gestión de departamentos y asignaciones ──────────────────────────────
+    Route::prefix('departments')->group(function () {
+        Route::get('/', [DepartmentController::class, 'getDepartments']);
+        Route::get('/{department}/agents', [DepartmentController::class, 'getAgentsByDepartment']);
+        Route::get('/stats', [DepartmentController::class, 'getDepartmentStats']);
+        Route::get('/unassigned', [DepartmentController::class, 'getUnassignedConversations']);
+        Route::post('/assign-conversation', [DepartmentController::class, 'assignConversation']);
+        Route::post('/auto-assign-all', [DepartmentController::class, 'autoAssignAll']);
+        Route::put('/agents/{user}', [DepartmentController::class, 'updateAgent']);
+    });
 });
