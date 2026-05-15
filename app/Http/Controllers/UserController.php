@@ -25,6 +25,7 @@ class UserController extends Controller
                 'id'                   => $u->id,
                 'name'                 => $u->name,
                 'email'                => $u->email,
+                'department'           => $u->department,
                 'active_conversations' => $u->active_conversations,
             ]);
 

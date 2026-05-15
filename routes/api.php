@@ -52,6 +52,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Estado de cuota mensual de mensajes
     Route::get('/message-quota', [MessageQuotaController::class, 'show']);
 
+    // Eliminar conversación (solo admin)
+    Route::delete('/conversations/{conversation}', [ConversationController::class, 'destroy'])
+        ->middleware('role:admin');
+
     // ─── Citas previas (lectura para todos los roles autenticados) ────────────
     Route::get('/citas', [CitaController::class, 'index']);
     Route::get('/citas/{cita}', [CitaController::class, 'show']);
@@ -72,9 +76,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/business-context', [BusinessContextController::class, 'store']);
     Route::put('/business-context/{businessContext}', [BusinessContextController::class, 'update']);
     Route::delete('/business-context/{businessContext}', [BusinessContextController::class, 'destroy']);
-
-    // ─── Gestión de conversaciones (solo admin puede eliminar) ───────────────
-    Route::delete('/conversations/{conversation}', [ConversationController::class, 'destroy']);
 
     // ─── Gestión de citas (admin puede editar/borrar) ─────────────────────────
     Route::put('/citas/{cita}', [CitaController::class, 'update']);
