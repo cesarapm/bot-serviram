@@ -73,6 +73,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/business-context/{businessContext}', [BusinessContextController::class, 'update']);
     Route::delete('/business-context/{businessContext}', [BusinessContextController::class, 'destroy']);
 
+    // ─── Gestión de conversaciones (solo admin puede eliminar) ───────────────
+    Route::delete('/conversations/{conversation}', [ConversationController::class, 'destroy']);
+
     // ─── Gestión de citas (admin puede editar/borrar) ─────────────────────────
     Route::put('/citas/{cita}', [CitaController::class, 'update']);
     Route::delete('/citas/{cita}', [CitaController::class, 'destroy']);

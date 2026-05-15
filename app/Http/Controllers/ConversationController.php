@@ -172,4 +172,16 @@ class ConversationController extends Controller
             'quota'      => $quotaSnapshot,
         ]);
     }
+
+    /**
+     * Elimina una conversación y todos sus mensajes.
+     * Solo accesible por admin (middleware en la ruta).
+     */
+    public function destroy(Conversation $conversation)
+    {
+        $conversation->messages()->delete();
+        $conversation->delete();
+
+        return response()->json(['message' => 'Conversación eliminada correctamente.']);
+    }
 }
