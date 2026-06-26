@@ -184,4 +184,53 @@ class ConversationController extends Controller
 
         return response()->json(['message' => 'Conversación eliminada correctamente.']);
     }
+
+    public function sendNotification(
+        Conversation $conversation,
+        TwilioService $twilio
+    ) {
+
+        $contact = $conversation->contact;
+
+        if (!$contact) {
+            return response()->json([
+                'message' => 'Contacto no encontrado'
+            ], 404);
+        }
+
+        // Evitar reenvíos antes de 72h
+        if (
+            $contact->last_notification_sent_at &&
+            $contact->last_notification_sent_at->gt(now()->subHours(72))
+        ) {
+            return response()->json([
+                'message' => 'Ya se envió una notificación recientemente'
+            ], 422);
+        }
+
+        // Log::info('sendNotification: enviando notificación a contacto_id: ' . $contact->phone);
+
+        try {
+            // Enviar notificación sin variables ni body (solo contentSid para recordatorio)
+            $twilioSid = $twilio->sendWhatsAppReminder(
+                $contact->phone
+            );
+        } catch (\Throwable $e) {
+            Log::error('sendNotification Twilio exception', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error al enviar la notificación.'], 500);
+        }
+
+        if (!$twilioSid) {
+            return response()->json(['error' => 'Twilio no pudo enviar la notificación.'], 502);
+        }
+
+        $contact->update([
+            'last_notification_sent_at' => now()
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'sid' => $twilioSid
+        ]);
+    }
 }
