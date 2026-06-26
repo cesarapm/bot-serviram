@@ -62,6 +62,7 @@ class ConversationController extends Controller
                     'name' => $c->assignedAgent->name,
                 ] : null,
                 'last_message' => $c->lastMessage?->body,
+                'last_message_update' => $c->lastMessage?->updated_at,
                 'updated_at' => $c->updated_at,
             ]);
 
