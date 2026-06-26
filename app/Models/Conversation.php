@@ -92,7 +92,7 @@ protected $fillable = ['contact_id', 'assigned_to', 'is_human', 'status', 'depar
         $this->update([
             'department' => $department,
             'assigned_to' => $specificAgent?->id,
-            'is_human' => true,
+            // 'is_human' => true,
             'status' => 'active'
         ]);
     }
