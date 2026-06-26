@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contact extends Model
 {
-    protected $fillable = ['phone', 'name'];
+    protected $fillable = ['phone', 'name', 'last_notification_sent_at'];
+
+
+
+    protected $casts = [
+    'last_notification_sent_at' => 'datetime',
+];
 
     public function conversations(): HasMany
     {

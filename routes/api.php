@@ -46,6 +46,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations/{conversation}/messages', [ConversationController::class, 'messages']);
     Route::patch('/conversations/{conversation}/toggle-human', [ConversationController::class, 'toggleHuman']);
     Route::post('/conversations/{conversation}/send', [ConversationController::class, 'sendHuman']);
+    Route::post(
+    '/conversations/{conversation}/send-notification',
+    [ConversationController::class,
+     'sendNotification']
+);
+    
+    
     Route::patch('/contacts/{contact}/name', [ContactController::class, 'updateName'])
         ->middleware('role:admin|asesor');
 

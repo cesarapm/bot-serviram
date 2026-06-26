@@ -51,4 +51,38 @@ class TwilioService
 
         return $response->json('sid');
     }
+
+    /**
+     * Envía un recordatorio/notificación sin variables usando contentSid.
+     * Ideal para mensajes preaprobados que no requieren personalización.
+     *
+     * @param  string $to Número en formato E.164, e.g. +5214445087305
+     * @return string|null Twilio MessageSid si fue exitoso, null si falló
+     */
+    public function sendWhatsAppReminder(string $to): ?string
+    {
+        // Twilio requiere el prefijo whatsapp:
+        $toFormatted = str_starts_with($to, 'whatsapp:') ? $to : "whatsapp:{$to}";
+
+        $contentSid = config('services.twilio.template');
+
+        $response = Http::withBasicAuth($this->sid, $this->token)
+            ->asForm()
+            ->post($this->baseUrl, [
+                'From'       => $this->from,
+                'To'         => $toFormatted,
+                'ContentSid' => $contentSid,
+            ]);
+
+        if ($response->failed()) {
+            Log::error('Twilio reminder send error', [
+                'status'   => $response->status(),
+                'response' => $response->json(),
+                'to'       => $toFormatted,
+            ]);
+            return null;
+        }
+
+        return $response->json('sid');
+    }
 }

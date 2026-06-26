@@ -10,7 +10,7 @@ use App\Services\TwilioService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Contact;
 class ConversationController extends Controller
 {
     /**
@@ -38,7 +38,7 @@ class ConversationController extends Controller
                     // 3. O conversaciones sin asignar (pueden tomarlas)
                     ->orWhere(function ($unassignedQuery) {
                         $unassignedQuery->whereNull('department')
-                                      ->whereNull('assigned_to');
+                            ->whereNull('assigned_to');
                     });
             });
         }
@@ -46,22 +46,22 @@ class ConversationController extends Controller
         $conversations = $query->orderByDesc('updated_at')
             ->get()
             ->map(fn($c) => [
-                'id'           => $c->id,
-                'is_human'     => $c->is_human,
-                'status'       => $c->status,
-                'department'   => $c->department,
+                'id' => $c->id,
+                'is_human' => $c->is_human,
+                'status' => $c->status,
+                'department' => $c->department,
                 'department_name' => $c->assigned_department_name,
-                'contact'      => [
-                    'id'    => $c->contact->id,
+                'contact' => [
+                    'id' => $c->contact->id,
                     'phone' => $c->contact->phone,
-                    'name'  => $c->contact->name,
+                    'name' => $c->contact->name,
                 ],
-                'assigned_to'  => $c->assignedAgent ? [
-                    'id'   => $c->assignedAgent->id,
+                'assigned_to' => $c->assignedAgent ? [
+                    'id' => $c->assignedAgent->id,
                     'name' => $c->assignedAgent->name,
                 ] : null,
                 'last_message' => $c->lastMessage?->body,
-                'updated_at'   => $c->updated_at,
+                'updated_at' => $c->updated_at,
             ]);
 
         return response()->json($conversations);
@@ -88,7 +88,7 @@ class ConversationController extends Controller
 
         return response()->json([
             'conversation_id' => $conversation->id,
-            'is_human'        => $conversation->is_human,
+            'is_human' => $conversation->is_human,
         ]);
     }
 
@@ -101,8 +101,7 @@ class ConversationController extends Controller
         Conversation $conversation,
         TwilioService $twilio,
         MessageQuotaService $messageQuota
-    )
-    {
+    ) {
 
         // Log::info('sendHuman [1/6] inicio', [
         //     'conversation_id' => $conversation->id,
@@ -151,10 +150,10 @@ class ConversationController extends Controller
 
         $message = Message::create([
             'conversation_id' => $conversation->id,
-            'body'            => $validated['body'],
-            'direction'       => 'outbound',
-            'sender_type'     => 'human_agent',
-            'twilio_sid'      => $twilioSid,
+            'body' => $validated['body'],
+            'direction' => 'outbound',
+            'sender_type' => 'human_agent',
+            'twilio_sid' => $twilioSid,
         ]);
 
         // Log::info('sendHuman [5/6] mensaje guardado', ['message_id' => $message->id]);
@@ -167,9 +166,9 @@ class ConversationController extends Controller
         // Log::info('sendHuman [6/6] completado');
 
         return response()->json([
-            'status'     => 'sent',
+            'status' => 'sent',
             'message_id' => $message->id,
-            'quota'      => $quotaSnapshot,
+            'quota' => $quotaSnapshot,
         ]);
     }
 

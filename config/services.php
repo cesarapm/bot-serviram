@@ -36,9 +36,10 @@ return [
     ],
 
     'twilio' => [
-        'sid'   => env('TWILIO_ACCOUNT_SID'),
-        'token' => env('TWILIO_AUTH_TOKEN'),
-        'from'  => env('TWILIO_WHATSAPP_FROM'), // ej: whatsapp:+17854294558
+        'sid'      => env('TWILIO_ACCOUNT_SID'),
+        'token'    => env('TWILIO_AUTH_TOKEN'),
+        'from'     => env('TWILIO_WHATSAPP_FROM'), // ej: whatsapp:+17854294558
+        'template' => env('TWILIO_TEMPLATE'),     // ContentSid de la plantilla
     ],
 
 ];
