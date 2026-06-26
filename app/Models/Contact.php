@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contact extends Model
 {
-    protected $fillable = ['phone', 'name', 'last_notification_sent_at'];
+    protected $fillable = ['phone', 'name', 'last_notification_sent_at', 'updated_at'];
 
 
 

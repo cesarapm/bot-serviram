@@ -55,6 +55,7 @@ class ConversationController extends Controller
                     'id' => $c->contact->id,
                     'phone' => $c->contact->phone,
                     'name' => $c->contact->name,
+                    'updated_at' => $c->contact->updated_at,
                 ],
                 'assigned_to' => $c->assignedAgent ? [
                     'id' => $c->assignedAgent->id,
@@ -225,6 +226,9 @@ class ConversationController extends Controller
 
         $contact->update([
             'last_notification_sent_at' => now()
+        ]);
+        $conversation->update([
+            'is_human' => false
         ]);
 
         return response()->json([
