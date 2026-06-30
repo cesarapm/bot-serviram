@@ -190,8 +190,17 @@ class ConversationController extends Controller
         Conversation $conversation,
         TwilioService $twilio
     ) {
+        // Log::info(
+        //     'sendNotification: conversation',
+        //     $conversation->toArray()
+        // );
 
         $contact = $conversation->contact;
+
+        // Log::info(
+        //     'CONTACT COMPLETO',
+        //     $contact?->toArray() ?? []
+        // );
 
         if (!$contact) {
             return response()->json([
@@ -216,6 +225,20 @@ class ConversationController extends Controller
             $twilioSid = $twilio->sendWhatsAppReminder(
                 $contact->phone
             );
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'body' => 'Notificacion enviada a Cliente',
+            'direction' => 'outbound',
+            'sender_type' => 'human_agent',
+            'twilio_sid' => null,
+        ]);
+
+        // Log::info('sendNotification: mensaje guardado', ['message_id' => $message->id]);
+
+
+
+
+
         } catch (\Throwable $e) {
             Log::error('sendNotification Twilio exception', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Error al enviar la notificación.'], 500);
